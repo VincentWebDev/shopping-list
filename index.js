@@ -1,3 +1,4 @@
+//site.webmanifest file adds icon to mobile homescreen
 //My FB DB https://playground-1b442-default-rtdb.firebaseio.com/
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
@@ -25,7 +26,7 @@ const shoppingListEl = document.getElementById("shopping-list");
 addButtonEl.addEventListener("click", function () {
   let inputValue = inputFieldEl.value;
 
-  push(shoppingListInDB, inputValue);
+  inputValue ? push(shoppingListInDB, inputValue) : null;
 
   clearInputFieldEl();
 });
@@ -44,7 +45,8 @@ onValue(shoppingListInDB, function (snapshot) {
       appendItemToShoppingListEl(currentItem);
     }
   } else {
-    shoppingListEl.innerHTML = "No items here... yet";
+    shoppingListEl.innerHTML =
+      "No items here... yet. List clears every 24 hours.";
   }
 });
 
@@ -56,19 +58,36 @@ function clearInputFieldEl() {
   inputFieldEl.value = "";
 }
 
+//save FB DB locations in array
+let DBLocations = [];
+
 function appendItemToShoppingListEl(item) {
   let itemID = item[0];
   let itemValue = item[1];
+  let exactLocationOfItemInDB = ref(database, `shoppingList/${itemID}`);
+  DBLocations.push(exactLocationOfItemInDB);
 
   let newEl = document.createElement("li");
 
   newEl.textContent = itemValue;
 
-  newEl.addEventListener("click", function () {
-    let exactLocationOfItemInDB = ref(database, `shoppingList/${itemID}`);
-
+  newEl.addEventListener("dblclick", function () {
     remove(exactLocationOfItemInDB);
   });
 
   shoppingListEl.append(newEl);
+}
+
+//clear DB every 24 hours
+if (DBLocations.length > 0) {
+  setInterval(clearDB, 86400000);
+}
+
+function clearDB() {
+  console.log(DBLocations);
+  for (let item of DBLocations) {
+    remove(item);
+  }
+
+  DBLocations = [];
 }
