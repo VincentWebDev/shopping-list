@@ -46,7 +46,7 @@ onValue(shoppingListInDB, function (snapshot) {
     }
   } else {
     shoppingListEl.innerHTML =
-      "No items here... yet. List clears every 24 hours.";
+      "No items here... yet. Firebase database access may be limited.";
   }
 });
 
@@ -58,14 +58,10 @@ function clearInputFieldEl() {
   inputFieldEl.value = "";
 }
 
-//save FB DB locations in array
-let DBLocations = [];
-
 function appendItemToShoppingListEl(item) {
   let itemID = item[0];
   let itemValue = item[1];
   let exactLocationOfItemInDB = ref(database, `shoppingList/${itemID}`);
-  DBLocations.push(exactLocationOfItemInDB);
 
   let newEl = document.createElement("li");
 
@@ -76,18 +72,4 @@ function appendItemToShoppingListEl(item) {
   });
 
   shoppingListEl.append(newEl);
-}
-
-//clear DB every 24 hours
-if (DBLocations.length > 0) {
-  setInterval(clearDB, 86400000);
-}
-
-function clearDB() {
-  console.log(DBLocations);
-  for (let item of DBLocations) {
-    remove(item);
-  }
-
-  DBLocations = [];
 }
